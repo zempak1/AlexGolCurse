@@ -4,13 +4,17 @@ package ru.makhmudov.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.makhmudov.dto.UserDTO;
 import ru.makhmudov.entity.UserReg;
 import ru.makhmudov.entity.enums.ERole;
 import ru.makhmudov.exceptions.UserExistException;
 import ru.makhmudov.payload.request.SignupRequest;
 import ru.makhmudov.repository.UserRepository;
+
+import java.security.Principal;
 
 @Service
 public class UserService {
@@ -49,28 +53,36 @@ public class UserService {
             throw new UserExistException("The user " + user.getUsername() + " already exist. Please check credentials");
         }
     }
-//
-//    public User updateUser(UserDTO userDTO, Principal principal) {
-//        User user = getUserByPrincipal(principal);
-//        user.setName(userDTO.getFirstname());
-//        user.setLastname(userDTO.getLastname());
-//        user.setBio(userDTO.getBio());
-//
-//        return userRepository.save(user);
-//    }
-//
-//    public User getCurrentUser(Principal principal) {
-//        return getUserByPrincipal(principal);
-//    }
-//
-//    private User getUserByPrincipal(Principal principal) {
-//        String username = principal.getName();
-//        return userRepository.findUserByUsername(username)
-//                .orElseThrow(() -> new UsernameNotFoundException("Username not found with username " + username));
-//
-//    }
-//
-//    public User getUserById(Long id) {
-//        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//    }
+
+    /*Пользователь сможет обновлять свои данные в профиле благодаря этому методу
+    * Principal идет из Spring Security он содержит данные пользователя и благодаря нему мы достаем пользователя
+    * UserDTO передается на клиента */
+
+    public UserReg updateUser(UserDTO userDTO, Principal principal) {
+        UserReg user = getUserByPrincipal(principal);
+        user.setName(userDTO.getFirstname());
+        user.setLastname(userDTO.getLastname());
+        user.setBio(userDTO.getBio());
+
+        return userRepository.save(user);
+    }
+
+
+    /*Позволяет взять текущего пользователя*/
+    public UserReg getCurrentUser(Principal principal) {
+        return getUserByPrincipal(principal);
+    }
+
+
+    /*Помогает доставать позьзователя из объекта Principal*/
+    private UserReg getUserByPrincipal(Principal principal) {
+        String username = principal.getName();
+        return userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found with username " + username));
+
+    }
+
+    public UserReg getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
 }
